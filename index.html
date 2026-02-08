@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Dearest Chetra</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root { --pink: #ff85a1; --dark-pink: #ff4d6d; --bg: #fff0f3; }
+        body { margin: 0; font-family: 'Arial', sans-serif; background: var(--bg); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .container { width: 90%; max-width: 400px; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; z-index: 10; }
+        .page { display: none; animation: fadeIn 0.5s ease; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .photo-frame { width: 100%; height: 250px; object-fit: cover; border-radius: 15px; margin-bottom: 15px; border: 4px solid var(--bg); }
+        h1 { color: var(--dark-pink); font-size: 1.6rem; }
+        p { color: #555; font-size: 1.1rem; line-height: 1.4; }
+
+        /* Memory Game Styles */
+        .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .card { height: 80px; background: var(--pink); border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 2rem; cursor: pointer; color: transparent; transition: 0.3s; }
+        .card.flipped { color: white; background: var(--dark-pink); cursor: default; }
+
+        /* Buttons */
+        .btn-group { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-main { background: var(--dark-pink); color: white; width: 80%; }
+        #no-btn { background: #eee; color: #888; }
+
+        .heart-particle { position: fixed; top: -10%; color: var(--dark-pink); z-index: 1; pointer-events: none; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="page1" class="page active">
+            <img src="pic1.jpg" alt="Memory 1" class="photo-frame">
+            <h1>Hey Chetra...</h1>
+            <p>I made something special to celebrate our almost 2 years together. Ready to see it?</p>
+            <button class="btn btn-main" onclick="showPage(2)">Let's Go! ❤️</button>
+        </div>
+
+        <div id="page2" class="page">
+            <img src="pic2.jpg" alt="Memory 2" class="photo-frame">
+            <h1>730 Days of Love</h1>
+            <p>From day one until now, you've been my best friend and my rock. Every second with you is a gift.</p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button class="btn" style="background:#eee" onclick="showPage(1)">Back</button>
+                <button class="btn btn-main" onclick="showPage(3)">Play a Game? 🎮</button>
+            </div>
+        </div>
+
+        <div id="page3" class="page">
+            <h1>Memory Match</h1>
+            <p>Unlock the final surprise by matching our love icons!</p>
+            <div class="game-grid" id="gameGrid"></div>
+            <button class="btn" style="margin-top:15px; background:#eee" onclick="showPage(2)">Back</button>
+        </div>
+
+        <div id="page4" class="page">
+            <img src="pic3.jpg" alt="Final Memory" class="photo-frame">
+            <h1 id="questionTitle">So, Chetra...</h1>
+            <p id="questionText">Will you be my Valentine and make my heart the happiest again?</p>
+            <div class="btn-group">
+                <button id="yes-btn" class="btn btn-main" onclick="celebrate()">YES! ❤️</button>
+                <button id="no-btn" class="btn" onclick="shrinkNo()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(num) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page' + num).classList.add('active');
+            if(num === 3) initGame();
+        }
+
+        // GAME LOGIC
+        const icons = ['🌹', '🍦', '💑', '🌹', '🍦', '💑']; 
+        let flippedCards = [];
+        let matchedCount = 0;
+
+        function initGame() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            icons.sort(() => Math.random() - 0.5).forEach((icon, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.icon = icon;
+                card.innerText = icon;
+                card.onclick = () => flipCard(card);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (flippedCards.length < 2 && !card.classList.contains('flipped')) {
+                card.classList.add('flipped');
+                flippedCards.push(card);
+                if (flippedCards.length === 2) setTimeout(checkMatch, 600);
+            }
+        }
+
+        function checkMatch() {
+            if (flippedCards[0].dataset.icon === flippedCards[1].dataset.icon) {
+                matchedCount += 2;
+                if (matchedCount === icons.length) {
+                    alert("You matched them all, Chetra! 🌸");
+                    showPage(4);
+                }
+            } else {
+                flippedCards.forEach(c => c.classList.remove('flipped'));
+            }
+            flippedCards = [];
+        }
+
+        // YES/NO LOGIC
+        let yesScale = 1;
+        function shrinkNo() {
+            yesScale += 0.5;
+            document.getElementById('yes-btn').style.transform = `scale(${yesScale})`;
+            const noBtn = document.getElementById('no-btn');
+            noBtn.style.transform = `scale(${1 - (yesScale/10)})`;
+            if (yesScale > 5) noBtn.style.display = 'none';
+        }
+
+        // FINALE
+        function celebrate() {
+            confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
+            document.getElementById('questionTitle').innerText = "YAY! ❤️";
+            document.getElementById('questionText').innerHTML = "I love you so much, Chetra! <br> Can't wait for our 2-year anniversary Valentine's!";
+            document.querySelector('.btn-group').style.display = 'none';
+        }
+
+        // Falling Hearts
+        setInterval(() => {
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤️';
+            heart.className = 'heart-particle';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 5000);
+        }, 400);
+    </script>
+</body>
+</html>
